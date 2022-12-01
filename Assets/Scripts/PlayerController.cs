@@ -82,13 +82,15 @@ public class PlayerController : MonoBehaviour
         else
         {
             velocity.y = 0;
+            trainerAnimator.SetBool("isJumping", false);
         }
         
         if (Input.GetButtonDown("Jump") && grounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeightWithoutGravity);
+            trainerAnimator.SetBool("isJumping", true);
         }
-        trainerAnimator.SetBool("isJumping", !grounded); 
+        
 
         controller.Move(velocity * Time.deltaTime);
     }
