@@ -2203,8 +2203,8 @@ Transform:
   m_GameObject: {fileID: 8140342533679745004}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 74.8, y: 0.22, z: 56.65}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.67, y: 0.67, z: 0.67}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1845907906440639034}
   - {fileID: 4269645907638992052}
@@ -2250,7 +2250,7 @@ MonoBehaviour:
   chaseDistance: 3
   safeDistance: 8
   controller: {fileID: 5053885224709265552}
-  currentState: 0
+  distanceToPlayer: 0
 --- !u!143 &5053885224709265552
 CharacterController:
   m_ObjectHideFlags: 0

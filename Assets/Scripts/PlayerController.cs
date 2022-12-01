@@ -57,10 +57,21 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift))
         {
             controller.Move(movement * (runSpeed * Time.deltaTime));
+            Debug.Log("Running");
+            trainerAnimator.SetBool("isRunning", true);
+            trainerAnimator.SetBool("isWalking", false);
+        }
+        else if (movement.magnitude > 0)
+        {
+            controller.Move(movement * (speed * Time.deltaTime)); 
+            Debug.Log("walking");
+            trainerAnimator.SetBool("isWalking", true);
+            trainerAnimator.SetBool("isRunning", false);
         }
         else
         {
-            controller.Move(movement * (speed * Time.deltaTime));   
+            trainerAnimator.SetBool("isWalking", false);
+            trainerAnimator.SetBool("isRunning", false);
         }
              
         //Gravity and Jumping
@@ -77,7 +88,19 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y = Mathf.Sqrt(jumpHeightWithoutGravity);
         }
+        trainerAnimator.SetBool("isJumping", !grounded); 
+
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void OnApplicationFocus(bool hasFocus) {
+        if (hasFocus)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else{
+            Cursor.lockState = CursorLockMode.None;
+        }
     }
 }
 

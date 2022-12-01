@@ -13,6 +13,7 @@ public class NpcController : MonoBehaviour
     }    
     BehaviorState currentState;
 
+    private Vector3 velocity;
     public Transform target;
     public float idleTime = 5f;
     public float walkTime = 5f;
@@ -61,6 +62,8 @@ public class NpcController : MonoBehaviour
                 RunAway();
                 break;
         }
+        //gravity
+        velocity.y += gravity * Time.deltaTime;
     }
 
     void Idle() 
@@ -85,6 +88,7 @@ public class NpcController : MonoBehaviour
         // Rotate randomly 15 degrees
         transform.Rotate(0, Random.Range(-15, 15), 0);
         controller.Move(transform.forward * 2 * Time.deltaTime);
+        controller.Move(velocity * Time.deltaTime);
 
         counter += Time.deltaTime;
         if (counter > walkTime) 
@@ -119,6 +123,8 @@ public class NpcController : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 0.1f);
 
         controller.Move(transform.forward * 5 * Time.deltaTime);
+        controller.Move(velocity * Time.deltaTime);
+
 
         if (distanceToPlayer > safeDistance)
         {
