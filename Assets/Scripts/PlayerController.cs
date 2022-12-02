@@ -18,6 +18,16 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Insert animator controller")]
     private Animator trainerAnimator;
 
+    [SerializeField]
+    private GameObject pokeBall;
+
+    [SerializeField]
+    private Transform pokeBallSpawn;
+
+    [SerializeField]
+    private float throwStrength = 100f;
+
+    private GameObject currentPokeBall;
 
     private Vector3 velocity;
     private float gravity = -9.8f;
@@ -28,6 +38,7 @@ public class PlayerController : MonoBehaviour
     public float runSpeed = 10f;
 
     public bool grounded;
+    public bool throwing;
 
     // Start is called before the first frame update
     void Start()
@@ -51,48 +62,91 @@ public class PlayerController : MonoBehaviour
         //Rotate along the camera
         playerTransform.rotation = Quaternion.AngleAxis(cameraTransform.rotation.eulerAngles.y,Vector3.up);
 
-        Vector3 movement = (playerTransform.right * x) + (playerTransform.forward * z);
+        Vector3 movement = (playerTransform.right * x) + (playerTransform.forward * z);        
 
-        //Control player speed
-        if (Input.GetKey(KeyCode.LeftShift))
+        //rotate the player
+        if (movement.magnitude > 0.1f)
         {
-            controller.Move(movement * (runSpeed * Time.deltaTime));
-            Debug.Log("Running");
-            trainerAnimator.SetBool("isRunning", true);
-            trainerAnimator.SetBool("isWalking", false);
-        }
-        else if (movement.magnitude > 0)
-        {
-            controller.Move(movement * (speed * Time.deltaTime)); 
-            Debug.Log("walking");
-            trainerAnimator.SetBool("isWalking", true);
-            trainerAnimator.SetBool("isRunning", false);
-        }
-        else
-        {
-            trainerAnimator.SetBool("isWalking", false);
-            trainerAnimator.SetBool("isRunning", false);
-        }
-             
-        //Gravity and Jumping
-        if (!grounded)
-        {
-            velocity.y += gravity * Time.deltaTime;
-        }
-        else
-        {
-            velocity.y = 0;
-            trainerAnimator.SetBool("isJumping", false);
+            playerTransform.rotation = Quaternion.LookRotation(movement);
         }
         
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeightWithoutGravity);
-            trainerAnimator.SetBool("isJumping", true);
-        }
-        
-
         controller.Move(velocity * Time.deltaTime);
+
+        //stop moving when throwing pokeball
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            throwing = true;
+            trainerAnimator.SetBool("isThrowing", true);
+            SpawnPokeballToBone();
+        }
+        
+        if (!throwing)
+        {
+            //Control player speed
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                controller.Move(movement * (runSpeed * Time.deltaTime));
+                Debug.Log("Running");
+                trainerAnimator.SetBool("isRunning", true);
+                trainerAnimator.SetBool("isWalking", false);
+            }
+            else if (movement.magnitude > 0)
+            {
+                controller.Move(movement * (speed * Time.deltaTime)); 
+                trainerAnimator.SetBool("isWalking", true);
+                trainerAnimator.SetBool("isRunning", false);
+            }
+            else
+            {
+                trainerAnimator.SetBool("isWalking", false);
+                trainerAnimator.SetBool("isRunning", false);
+            }
+
+            //Gravity and Jumping
+            if (!grounded)
+            {
+                velocity.y += gravity * Time.deltaTime;
+            }
+            else
+            {
+                velocity.y = 0;
+                trainerAnimator.SetBool("isJumping", false);
+            }
+            
+            if (Input.GetButtonDown("Jump") && grounded)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeightWithoutGravity);
+                trainerAnimator.SetBool("isJumping", true);
+            }
+        }
+    }
+
+    public void ThrowEnded() 
+    {
+        throwing = false;
+        trainerAnimator.SetBool("isThrowing", false);
+        Debug.Log("ended");
+    }
+
+    public void SpawnPokeballToBone()
+    {
+        currentPokeBall = Instantiate(pokeBall, pokeBallSpawn, false);
+    }
+
+    public void ReleasePokeball()
+    {
+        if (currentPokeBall != null)
+        {
+            currentPokeBall.transform.parent = null;
+            currentPokeBall.GetComponent<Rigidbody>().useGravity = true;
+            currentPokeBall.GetComponent<SphereCollider>().enabled = true;
+            Transform cameraTransform = mainCamera.transform;
+
+            // throw pokeball up 45 degree
+            Vector3 throwDirection = cameraTransform.forward + cameraTransform.up * 1.5f;
+            currentPokeBall.GetComponent<Rigidbody>().AddForce(throwDirection * throwStrength);
+            currentPokeBall = null;
+        }
     }
 
     private void OnApplicationFocus(bool hasFocus) {
