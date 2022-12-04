@@ -31,6 +31,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 velocity;
     private float gravity = -9.8f;
+
+    [SerializeField]
     private float jumpHeightWithoutGravity = 10f;
     public float maxDistanceToJump;
 
@@ -64,24 +66,27 @@ public class PlayerController : MonoBehaviour
 
         Vector3 movement = (playerTransform.right * x) + (playerTransform.forward * z);        
 
-        //rotate the player
-        if (movement.magnitude > 0.1f)
-        {
-            playerTransform.rotation = Quaternion.LookRotation(movement);
-        }
+
         
         controller.Move(velocity * Time.deltaTime);
 
         //stop moving when throwing pokeball
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyUp(KeyCode.LeftControl))
         {
             throwing = true;
             trainerAnimator.SetBool("isThrowing", true);
             SpawnPokeballToBone();
         }
-        
+        if (grounded && velocity.y < 0) {
+            trainerAnimator.SetBool("isJumping", false);
+        }
         if (!throwing)
         {
+            //rotate the player
+            if (movement.magnitude > 0.1f)
+            {
+                playerTransform.rotation = Quaternion.LookRotation(movement);
+            }
             //Control player speed
             if (Input.GetKey(KeyCode.LeftShift))
             {
@@ -103,21 +108,14 @@ public class PlayerController : MonoBehaviour
             }
 
             //Gravity and Jumping
-            if (!grounded)
-            {
-                velocity.y += gravity * Time.deltaTime;
-            }
-            else
-            {
-                velocity.y = 0;
-                trainerAnimator.SetBool("isJumping", false);
-            }
+            velocity.y += gravity * Time.deltaTime;
             
             if (Input.GetButtonDown("Jump") && grounded)
             {
                 velocity.y = Mathf.Sqrt(jumpHeightWithoutGravity);
                 trainerAnimator.SetBool("isJumping", true);
             }
+            
         }
     }
 
@@ -125,7 +123,6 @@ public class PlayerController : MonoBehaviour
     {
         throwing = false;
         trainerAnimator.SetBool("isThrowing", false);
-        Debug.Log("ended");
     }
 
     public void SpawnPokeballToBone()
@@ -144,6 +141,7 @@ public class PlayerController : MonoBehaviour
 
             // throw pokeball up 45 degree
             Vector3 throwDirection = cameraTransform.forward + cameraTransform.up * 1.5f;
+            Debug.Log(throwDirection);
             currentPokeBall.GetComponent<Rigidbody>().AddForce(throwDirection * throwStrength);
             currentPokeBall = null;
         }
